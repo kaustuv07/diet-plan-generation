@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Set Goals{% endblock %}
+
+{% block content %}
+<h2>Set Your Daily Nutritional Goals</h2>
+<form method="POST" action="{{ url_for('goals') }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.calories.label }}<br>
+        {{ form.calories(class_="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.protein.label }}<br>
+        {{ form.protein(class_="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.carbs.label }}<br>
+        {{ form.carbs(class_="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.fat.label }}<br>
+        {{ form.fat(class_="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.submit(class_="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}

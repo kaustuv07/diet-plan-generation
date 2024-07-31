@@ -1,0 +1,89 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    background-color: #333;
+    padding: 1em;
+    text-align: center;
+}
+
+nav a {
+    color: white;
+    margin: 0 1em;
+    text-decoration: none;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.content {
+    margin: 2em;
+}
+
+.alert {
+    padding: 1em;
+    margin: 1em 0;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.table {
+    width: 100%;
+    margin-top: 1em;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 0.75em;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+.navbar-brand {
+    display: flex;
+    align-items: center;
+}
+.navbar-brand img {
+    margin-right: 10px; /* Space between the logo and text */
+}
+
+h1{
+    text-align: center;
+    color:white;
+}
+p{
+    text-align: center;
+    color:white;
+    font-size: large;
+}
+/* styles.css */
+.form-label {
+    color: white;
+}
+
+h2 {
+    color: white;
+}
+/* styles.css */
+.navbar-dark-custom {
+    background-color: #baffc9; /* Darker background color */
+}
+/* Add this to your styles.css or inside a <style> tag */
+
+
+

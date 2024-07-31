@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center mb-4 text-white">Register</h2>
+            <form method="POST" action="{{ url_for('register') }}" class="bg-dark p-4 rounded">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.username.label(class_="form-label text-white") }}<br>
+                    {{ form.username(size=32, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label(class_="form-label text-white") }}<br>
+                    {{ form.email(size=32, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.password.label(class_="form-label text-white") }}<br>
+                    {{ form.password(size=32, class_="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.confirm_password.label(class_="form-label text-white") }}<br>
+                    {{ form.confirm_password(size=32, class_="form-control") }}
+                </div>
+                <div class="form-group text-center">
+                    {{ form.submit(class_="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
