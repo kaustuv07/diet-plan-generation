@@ -4,6 +4,8 @@ from app.forms import RegistrationForm, LoginForm, GoalForm
 from app.models import User, Goal
 from flask_login import login_user, current_user, logout_user, login_required
 import pandas as pd
+from flask import request, jsonify
+from app.models import DietPlan
 
 @app.route("/")
 @app.route("/home")
@@ -48,7 +50,19 @@ def logout():
 def goals():
     form = GoalForm()
     if form.validate_on_submit():
-        goal = Goal(calories=form.calories.data, protein=form.protein.data, carbs=form.carbs.data, fat=form.fat.data, user_id=current_user.id)
+        goal = Goal(
+            calories=form.calories.data,
+            protein=form.protein.data,
+            carbs=form.carbs.data,
+            fat=form.fat.data,
+            bmi=form.bmi.data,
+            fitness_level=form.fitness_level.data,
+            health_issues=form.health_issues.data,
+            veg_preference=form.veg_preference.data,
+            weight_goal=form.weight_goal.data,
+            dietary_restrictions=form.dietary_restrictions.data,
+            user_id=current_user.id
+        )
         db.session.add(goal)
         db.session.commit()
         flash('Your goals have been set!', 'success')
@@ -76,12 +90,63 @@ def diet_plan():
     # Generate the diet plan
     diet_plan_df = generate_diet_plan_ml(classifier, scaler, imputer, df, daily_goals)
 
-    # Convert the DataFrame to HTML for display
-    diet_plan_html = diet_plan_df.to_html(classes='table table-striped')
+    # Convert DataFrame to a list of dictionaries for easier use in Jinja2 template
+    diet_plan_list = diet_plan_df.to_dict(orient='records')
 
-    return render_template('diet_plan.html', diet_plan=diet_plan_html)
+    return render_template('diet_plan.html', diet_plan=diet_plan_list)
 
-@app.route("/current_plan")
+
+@app.route('/current_diet_plan', methods=['GET'])
 @login_required
 def current_plan():
-    return render_template('current_plan.html')
+    user_id = current_user.username
+    diet_plan_df = fetch_diet_plan(user_id)
+    # Convert DataFrame to list of dictionaries
+    diet_plan = diet_plan_df.to_dict(orient='records')
+    return render_template('current_plan.html', diet_plan=diet_plan)
+def fetch_diet_plan(user_id):
+    # Fetch the diet plan from the database based on the user_id
+    diet_plans = DietPlan.query.filter_by(user_id=user_id).all()
+    # Convert query results to DataFrame
+    records = [plan.diet_plan for plan in diet_plans]
+    if records:
+        # Flatten the list of records if needed
+        diet_plan_df = pd.DataFrame([item for sublist in records for item in sublist])
+        return diet_plan_df
+    else:
+        return pd.DataFrame()  # Return an empty DataFrame if no records found
+
+
+
+@app.route('/save_diet_plan', methods=['POST'])
+@login_required
+def save_diet_plan():
+    data = request.json
+    diet_plan = data.get('diet_plan')
+    user_id = current_user.username
+
+    if not diet_plan:
+        return jsonify({'error': 'No diet plan provided'}), 400
+
+    # Convert the received diet plan to a DataFrame if needed
+    diet_plan_df = pd.DataFrame(diet_plan)
+    
+    # Convert DataFrame to list of dicts
+    diet_plan_records = diet_plan_df.to_dict(orient='records')
+
+    # Check if a diet plan for this user already exists
+    existing_plan = DietPlan.query.filter_by(user_id=user_id).first()
+    if existing_plan:
+        # Update the existing record
+        existing_plan.diet_plan = diet_plan_records
+    else:
+        # Create a new DietPlan record
+        new_diet_plan = DietPlan(user_id=user_id, diet_plan=diet_plan_records)
+        db.session.add(new_diet_plan)
+
+    db.session.commit()
+
+    return jsonify({'message': 'Diet plan saved successfully'}), 200
+
+
+

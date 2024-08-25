@@ -5,4 +5,29 @@
 {% block content %}
 <h2>Your Current Diet Plan</h2>
 <p>Details of your current diet plan will be displayed here.</p>
+
+{% if diet_plan %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Food</th>
+                <th>Calories</th>
+                <th>Protein</th>
+                <th>Meal Type</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in diet_plan %}
+            <tr>
+                <td>{{ item.food }}</td>
+                <td>{{ item['Caloric Value'] }}</td>
+                <td>{{ item.Protein }}</td>
+                <td>{{ item.meal_type }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No diet plan available.</p>
+{% endif %}
 {% endblock %}

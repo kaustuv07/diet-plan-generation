@@ -12,15 +12,21 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
-    goals = db.relationship('Goal', backref='owner', lazy=True)
+    goals = db.relationship('Goal', backref='user', lazy=True)
+
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 class Goal(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    calories = db.Column(db.Integer, nullable=False)
-    protein = db.Column(db.Integer, nullable=False)
-    carbs = db.Column(db.Integer, nullable=False)
-    fat = db.Column(db.Integer, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    bmi = db.Column(db.String(20), nullable=True)
+    fitness_level = db.Column(db.String(20), nullable=True)
+    health_issues = db.Column(db.Text, nullable=True)
+    veg_preference = db.Column(db.String(10), nullable=True)
+    weight_goal = db.Column(db.String(10), nullable=True)
+    dietary_restrictions = db.Column(db.Text, nullable=True)
 
 class Food(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,3 +67,12 @@ class Food(db.Model):
     nutrition_density = db.Column(db.Float, nullable=False)
     meal_type = db.Column(db.String(50), nullable=False)  # e.g., 'breakfast', 'lunch', 'dinner', 'snack'
 
+
+class DietPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(150), nullable=False)
+    diet_plan = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<DietPlan {self.id}>'

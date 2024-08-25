@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField,TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models import User
 
@@ -27,8 +27,14 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Login')
 
 class GoalForm(FlaskForm):
-    calories = IntegerField('Daily Calories', validators=[DataRequired()])
-    protein = IntegerField('Daily Protein (g)', validators=[DataRequired()])
-    carbs = IntegerField('Daily Carbs (g)', validators=[DataRequired()])
-    fat = IntegerField('Daily Fat (g)', validators=[DataRequired()])
-    submit = SubmitField('Set Goals')
+    calories = StringField('Calories', validators=[DataRequired()])
+    protein = StringField('Protein', validators=[DataRequired()])
+    carbs = StringField('Carbs', validators=[DataRequired()])
+    fat = StringField('Fat', validators=[DataRequired()])
+    bmi = StringField('BMI')
+    fitness_level = StringField('Fitness Level')
+    health_issues = TextAreaField('Health Issues')
+    veg_preference = StringField('Veg Preference')
+    weight_goal = StringField('Weight Goal')
+    dietary_restrictions = TextAreaField('Dietary Restrictions')
+    submit = SubmitField('Submit')
