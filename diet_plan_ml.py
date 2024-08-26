@@ -113,46 +113,55 @@ def select_meal(meal_type, remaining_goals, available_foods, min_calories, max_c
 
 # Function to generate a daily diet plan
 def generate_diet_plan_ml(model, scaler, imputer, df, restrictions=None, health_issues=None, bmi=None, fitness_level=None, veg_preference=None, weight_goal=None):
+    # Check if DataFrame is empty
+    if df.empty:
+        raise ValueError("The input DataFrame is empty. No data available to generate diet plan.")
+
     # Initialize daily goals
     daily_goals = initialize_daily_goals(bmi, fitness_level, health_issues, veg_preference, weight_goal)
     remaining_goals = daily_goals.copy()
     diet_plan = pd.DataFrame()
-    
+
     # Apply dietary restrictions and preferences
     if restrictions:
         df = df[~df['food'].isin(restrictions)]
-    if veg_preference is not None:
-        df = df[df['veg_category'] == veg_preference]
-    
-    # Predict meal types for all food items
-    features = df[['Caloric Value', 'Fat', 'Saturated Fats', 'Monounsaturated Fats', 
-                   'Polyunsaturated Fats', 'Carbohydrates', 'Sugars', 'Protein', 
-                   'Dietary Fiber', 'Cholesterol', 'Sodium', 'Water', 'Vitamin A', 
-                   'Vitamin B1', 'Vitamin B11', 'Vitamin B12', 'Vitamin B2', 
-                   'Vitamin B3', 'Vitamin B5', 'Vitamin B6', 'Vitamin C', 
-                   'Vitamin D', 'Vitamin E', 'Vitamin K', 'Calcium', 'Copper', 
-                   'Iron', 'Magnesium', 'Manganese', 'Phosphorus', 'Potassium', 
-                   'Selenium', 'Zinc', 'Nutrition Density']]
-    
-    # Handle missing values
+    if veg_preference:
+        if veg_preference.lower() == 'veg':
+            df = df[df['veg_category'].str.lower() == 'veg']
+
+    # Ensure required columns are present
+    required_columns = ['Caloric Value', 'Fat', 'Saturated Fats', 'Monounsaturated Fats', 
+                        'Polyunsaturated Fats', 'Carbohydrates', 'Sugars', 'Protein', 
+                        'Dietary Fiber', 'Cholesterol', 'Sodium', 'Water', 'Vitamin A', 
+                        'Vitamin B1', 'Vitamin B11', 'Vitamin B12', 'Vitamin B2', 
+                        'Vitamin B3', 'Vitamin B5', 'Vitamin B6', 'Vitamin C', 
+                        'Vitamin D', 'Vitamin E', 'Vitamin K', 'Calcium', 'Copper', 
+                        'Iron', 'Magnesium', 'Manganese', 'Phosphorus', 'Potassium', 
+                        'Selenium', 'Zinc', 'Nutrition Density']
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"Missing columns in the DataFrame: {', '.join(missing_columns)}")
+
+    # Prepare features for imputation
+    features = df[required_columns]
+
+    # Check if features DataFrame is empty
+    if features.empty:
+        raise ValueError("Features DataFrame is empty. No data available for imputation.")
+
+    # Imputation
     features_imputed = imputer.transform(features)
     df_scaled = scaler.transform(features_imputed)
     
+    # Predict meal types for all food items
     df['predicted_meal_type'] = model.predict(df_scaled)
-    
+
     # Copy available foods to a new DataFrame
     available_foods = df.copy()
-    
+
     # Minimum and maximum calorie requirements
-    min_calories = {
-        'breakfast': 269,
-        'lunch': 500,
-        'dinner': 500,
-        'snack': 70
-    }
-    max_calories = {
-        'snack': 120
-    }
+    min_calories = {'breakfast': 200, 'lunch': 400, 'dinner': 400, 'snack': 60}
+    max_calories = {'snack': 120}
     
     # Select exactly one breakfast, lunch, and dinner
     for meal in ['breakfast', 'lunch', 'dinner']:
@@ -163,13 +172,12 @@ def generate_diet_plan_ml(model, scaler, imputer, df, restrictions=None, health_
     snack_count = 0
     while remaining_goals['calories'] > 0 and snack_count < 6:
         snack, available_foods = select_meal('snack', remaining_goals, available_foods, min_calories['snack'], max_calories['snack'])
-        if snack.empty:  # Break if no more snacks are available
+        if snack.empty:
             break
         diet_plan = pd.concat([diet_plan, snack], ignore_index=True)
         snack_count += 1
     
     # Ensure food variety and servings are met
-    # Example: Check for fruit and vegetable inclusion
     fruit_veg_count = diet_plan['food'].apply(lambda x: 'fruit' in x or 'vegetable' in x).sum()
     if fruit_veg_count < 5:
         additional_fruit_veg = df[(df['food'].str.contains('fruit') | df['food'].str.contains('vegetable')) & (df['predicted_meal_type'] == 'snack')]
@@ -182,7 +190,6 @@ def generate_diet_plan_ml(model, scaler, imputer, df, restrictions=None, health_
             fruit_veg_count += 1
             snack_count += 1
     
-    # Ensure sufficient proteins and whole grains
     proteins_needed = 2 - diet_plan['food'].apply(lambda x: 'protein' in x).sum()
     grains_needed = 6 - diet_plan['food'].apply(lambda x: 'grain' in x).sum()
     
@@ -210,3 +217,4 @@ def generate_diet_plan_ml(model, scaler, imputer, df, restrictions=None, health_
     
     diet_plan = diet_plan[['food', 'Caloric Value', 'Protein', 'Fat', 'Sugars', 'meal_type', 'veg_category']]
     return diet_plan
+

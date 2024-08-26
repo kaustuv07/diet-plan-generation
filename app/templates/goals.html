@@ -3,51 +3,96 @@
 {% block title %}Set Goals{% endblock %}
 
 {% block content %}
-<h2>Set Your Daily Nutritional Goals</h2>
-<form method="POST" action="{{ url_for('goals') }}">
+<h2 style="color: white; text-align: center;">Set Your Daily Nutritional Goals</h2>
+<form method="POST" action="{{ url_for('goals') }}" style="max-width: 400px; margin: auto;">
     {{ form.hidden_tag() }}
+
     <div class="form-group">
-        {{ form.calories.label }}<br>
-        {{ form.calories(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.height.label.text }}:
+        </label><br>
+        {{ form.height(class_="form-control", style="color: white; background-color: #333; text-align: center; height: 30px; width: 100%;") }}
     </div>
+
     <div class="form-group">
-        {{ form.protein.label }}<br>
-        {{ form.protein(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.weight.label.text }}:
+        </label><br>
+        {{ form.weight(class_="form-control", style="color: white; background-color: #333; text-align: center; height: 30px; width: 100%;") }}
     </div>
-    <div class="form-group">
-        {{ form.carbs.label }}<br>
-        {{ form.carbs(class_="form-control") }}
+
+    <div class="form-group" style="text-align: center;">
+        <label style="color: white; font-weight: bold; font-size: 1.1em;">BMI:</label>
+        <span id="bmi_display" style="color: white;"></span>
     </div>
+
     <div class="form-group">
-        {{ form.fat.label }}<br>
-        {{ form.fat(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.fitness_level.label.text }}:
+        </label><br>
+        {{ form.fitness_level(class_="form-control", style="color: white; background-color: #333; text-align: center; width: 100%;") }}
     </div>
+
     <div class="form-group">
-        {{ form.bmi.label }}<br>
-        {{ form.bmi(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.health_issues.label.text }}:
+        </label><br>
+        {% for checkbox in form.health_issues %}
+            <div style="color: white;">
+                {{ checkbox.label }} {{ checkbox() }}
+            </div>
+        {% endfor %}
     </div>
+
     <div class="form-group">
-        {{ form.fitness_level.label }}<br>
-        {{ form.fitness_level(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.veg_preference.label.text }}:
+        </label><br>
+        {{ form.veg_preference(class_="form-control", style="color: white; background-color: #333; text-align: center; width: 100%;") }}
     </div>
+
     <div class="form-group">
-        {{ form.health_issues.label }}<br>
-        {{ form.health_issues(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.weight_goal.label.text }}:
+        </label><br>
+        {{ form.weight_goal(class_="form-control", style="color: white; background-color: #333; text-align: center; width: 100%;") }}
     </div>
+
     <div class="form-group">
-        {{ form.veg_preference.label }}<br>
-        {{ form.veg_preference(class_="form-control") }}
+        <label style="color: white; text-align: center; font-weight: bold; font-size: 1.1em;">
+            {{ form.dietary_restrictions.label.text }}:
+        </label><br>
+        {{ form.dietary_restrictions(class_="form-control", style="color: white; background-color: #333; text-align: center; width: 100%; height: 60px;") }}
     </div>
-    <div class="form-group">
-        {{ form.weight_goal.label }}<br>
-        {{ form.weight_goal(class_="form-control") }}
-    </div>
-    <div class="form-group">
-        {{ form.dietary_restrictions.label }}<br>
-        {{ form.dietary_restrictions(class_="form-control") }}
-    </div>
-    <div class="form-group">
+
+    <div class="form-group" style="text-align: center;">
         {{ form.submit(class_="btn btn-primary") }}
     </div>
 </form>
+
+<script>
+    document.getElementById("height").addEventListener("input", calculateBMI);
+    document.getElementById("weight").addEventListener("input", calculateBMI);
+
+    function calculateBMI() {
+        var height = parseFloat(document.getElementById("height").value) / 100;
+        var weight = parseFloat(document.getElementById("weight").value);
+        if (height > 0 && weight > 0) {
+            var bmi = (weight / (height * height)).toFixed(2);
+            var category = '';
+
+            if (bmi < 18.5) {
+                category = 'Underweight';
+            } else if (bmi >= 18.5 && bmi < 24.9) {
+                category = 'Healthy weight';
+            } else if (bmi >= 25 && bmi < 29.9) {
+                category = 'Overweight';
+            } else {
+                category = 'Obesity';
+            }
+
+            document.getElementById("bmi_display").innerText = bmi + ' (' + category + ')';
+        }
+    }
+</script>
 {% endblock %}

@@ -2,6 +2,17 @@ from datetime import datetime
 from app import db, login_manager
 from flask_login import UserMixin
 
+class Goal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    bmi = db.Column(db.String(20), nullable=True)
+    bmi_category = db.Column(db.String(20), nullable=True)  
+    fitness_level = db.Column(db.String(20), nullable=True)
+    health_issues = db.Column(db.Text, nullable=True)
+    veg_preference = db.Column(db.String(10), nullable=True)
+    weight_goal = db.Column(db.String(10), nullable=True)
+    dietary_restrictions = db.Column(db.Text, nullable=True)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -13,21 +24,6 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password = db.Column(db.String(60), nullable=False)
     goals = db.relationship('Goal', backref='user', lazy=True)
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
-class Goal(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    bmi = db.Column(db.String(20), nullable=True)
-    fitness_level = db.Column(db.String(20), nullable=True)
-    health_issues = db.Column(db.Text, nullable=True)
-    veg_preference = db.Column(db.String(10), nullable=True)
-    weight_goal = db.Column(db.String(10), nullable=True)
-    dietary_restrictions = db.Column(db.Text, nullable=True)
-
 class Food(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)

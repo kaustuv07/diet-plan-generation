@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField,TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField,TextAreaField,StringField, SelectField, SelectMultipleField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models import User
 
@@ -25,16 +25,36 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
-
+    
 class GoalForm(FlaskForm):
-    calories = StringField('Calories', validators=[DataRequired()])
-    protein = StringField('Protein', validators=[DataRequired()])
-    carbs = StringField('Carbs', validators=[DataRequired()])
-    fat = StringField('Fat', validators=[DataRequired()])
-    bmi = StringField('BMI')
-    fitness_level = StringField('Fitness Level')
-    health_issues = TextAreaField('Health Issues')
-    veg_preference = StringField('Veg Preference')
-    weight_goal = StringField('Weight Goal')
-    dietary_restrictions = TextAreaField('Dietary Restrictions')
+    height = StringField('Height (cm)', validators=[DataRequired()])
+    weight = StringField('Weight (kg)', validators=[DataRequired()])
+    
+    fitness_level = SelectField(
+        'Fitness Level',
+        choices=[('sedentary', 'Sedentary'), ('normal', 'Normal'), ('highly_active', 'Highly Active')]
+    )
+    
+    health_issues = SelectMultipleField(
+        'Health Issues',
+        choices=[
+            ('heart_disease', 'Heart Disease'), 
+            ('diabetes', 'Diabetes'), 
+            ('hypertension', 'Hypertension')
+        ],
+        option_widget=BooleanField.widget
+    )
+
+    veg_preference = SelectField(
+        'Veg Preference',
+        choices=[('veg'), ('non-veg')]
+    )
+
+    weight_goal = SelectField(
+        'Weight Goal',
+        choices=[('gain', 'Gain'), ('lose', 'Lose')]
+    )
+
+    dietary_restrictions = StringField('Dietary Restrictions')
+
     submit = SubmitField('Submit')

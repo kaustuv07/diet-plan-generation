@@ -12,6 +12,10 @@ from app.models import DietPlan
 def home():
     return render_template('index.html')
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
@@ -45,29 +49,48 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-@app.route("/goals", methods=['GET', 'POST'])
-@login_required
+
+@app.route('/goals', methods=['GET', 'POST'])
 def goals():
     form = GoalForm()
     if form.validate_on_submit():
+        # Calculate BMI based on height and weight
+        height = float(form.height.data) / 100  # Convert cm to meters
+        weight = float(form.weight.data)
+        bmi = round(weight / (height * height), 2)
+        
+        # Categorize the BMI
+        if bmi < 18.5:
+            bmi_category = 'Underweight'
+        elif 18.5 <= bmi < 24.9:
+            bmi_category = 'Healthy weight'
+        elif 25 <= bmi < 29.9:
+            bmi_category = 'Overweight'
+        else:
+            bmi_category = 'Obesity'
+        
+        # Convert list fields to strings
+        health_issues = ', '.join(form.health_issues.data) if form.health_issues.data else ''
+        dietary_restrictions = ', '.join(form.dietary_restrictions.data) if form.dietary_restrictions.data else ''
+
+        # Save the user's goals to the database
         goal = Goal(
-            calories=form.calories.data,
-            protein=form.protein.data,
-            carbs=form.carbs.data,
-            fat=form.fat.data,
-            bmi=form.bmi.data,
+            user_id=current_user.id,  # Assuming you have user authentication
+            bmi=str(bmi),  # Convert to string to match the model field type
+            bmi_category=bmi_category,
             fitness_level=form.fitness_level.data,
-            health_issues=form.health_issues.data,
+            health_issues=health_issues,
             veg_preference=form.veg_preference.data,
             weight_goal=form.weight_goal.data,
-            dietary_restrictions=form.dietary_restrictions.data,
-            user_id=current_user.id
+            dietary_restrictions=dietary_restrictions,
         )
         db.session.add(goal)
         db.session.commit()
+
         flash('Your goals have been set!', 'success')
-        return redirect(url_for('home'))
-    return render_template('goals.html', form=form)
+        return redirect(url_for('index'))  # Redirect to a different page after setting goals
+
+    return render_template('goals.html', title='Set Goals', form=form)
 
 @app.route("/diet_plan")
 @login_required
@@ -77,18 +100,36 @@ def diet_plan():
 
     # Load the food dataset
     df = pd.read_csv('food_dataset_with_meal_types_categories_and_veg.csv')
+    
+    # Debugging: Check if the DataFrame is loaded correctly
+    print("DataFrame shape:", df.shape)
+    print(df.head())
 
     # Get the user's goals from the database
     goal = Goal.query.filter_by(user_id=current_user.id).first()
-    daily_goals = {
-        'calories': goal.calories,
-        'protein': goal.protein,
-        'carbs': goal.carbs,
-        'fat': goal.fat
-    }
+
+    # Get the user's attributes
+    bmi = float(goal.bmi) if goal.bmi else None
+    fitness_level = goal.fitness_level
+    health_issues = goal.health_issues.split(',') if goal.health_issues else []
+    veg_preference = goal.veg_preference
+    weight_goal = goal.weight_goal
+
+    # Check if DataFrame is empty before proceeding
+    if df.empty:
+        return "Error: No data available for generating the diet plan."
 
     # Generate the diet plan
-    diet_plan_df = generate_diet_plan_ml(classifier, scaler, imputer, df, daily_goals)
+    try:
+        diet_plan_df = generate_diet_plan_ml(classifier, scaler, imputer, df, 
+                                             restrictions=None,  # Assuming you have a method to get this
+                                             health_issues=health_issues,
+                                             bmi=bmi,
+                                             fitness_level=fitness_level,
+                                             veg_preference=veg_preference,
+                                             weight_goal=weight_goal)
+    except ValueError as e:
+        return f"Error: {str(e)}"
 
     # Convert DataFrame to a list of dictionaries for easier use in Jinja2 template
     diet_plan_list = diet_plan_df.to_dict(orient='records')
