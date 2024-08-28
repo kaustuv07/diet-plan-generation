@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile - Diet Plan Generator{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-body text-center">
+                    <img src="{{ url_for('static', filename=current_user.image_file) }}" class="rounded-circle img-fluid mb-3 border" alt="Profile Picture" style="width: 150px; height: 150px; object-fit: cover; border: 2px solid #007bff;">
+                    <h4 class="mt-3 text-dark font-weight-bold">{{ current_user.username }}</h4>
+                    <p class="text-muted">{{ current_user.email }}</p>
+
+                    <!-- Form to Upload Profile Picture -->
+                    <form method="POST" action="{{ url_for('update_profile_picture') }}" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="profile_picture" class="btn btn-outline-primary btn-sm mt-2">Change Profile Picture</label>
+                            <input type="file" id="profile_picture" name="profile_picture" class="d-none" accept="image/*">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-body">
+                    <h4 class="card-title text-dark font-weight-bold">Personal Information</h4>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-dark mb-2"><strong>Username:</strong> {{ current_user.username }}</p>
+                            <p class="text-dark mb-2"><strong>Email:</strong> {{ current_user.email }}</p>
+                        </div>
+                    </div>
+
+                    {% if current_user.goals %}
+                    <h4 class="card-title mt-4 text-dark font-weight-bold">Health and Fitness Goals</h4>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {% if current_user.goals[0].bmi %}
+                            <p class="text-dark mb-2"><strong>BMI:</strong> {{ current_user.goals[0].bmi }}</p>
+                            {% endif %}
+                            {% if current_user.goals[0].bmi_category %}
+                            <p class="text-dark mb-2"><strong>BMI Category:</strong> {{ current_user.goals[0].bmi_category }}</p>
+                            {% endif %}
+                            {% if current_user.goals[0].fitness_level %}
+                            <p class="text-dark mb-2"><strong>Fitness Level:</strong> {{ current_user.goals[0].fitness_level }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {% if current_user.goals[0].health_issues %}
+                            <p class="text-dark mb-2"><strong>Health Issues:</strong> {{ current_user.goals[0].health_issues }}</p>
+                            {% endif %}
+                            {% if current_user.goals[0].veg_preference %}
+                            <p class="text-dark mb-2"><strong>Vegetarian Preference:</strong> {{ current_user.goals[0].veg_preference }}</p>
+                            {% endif %}
+                            {% if current_user.goals[0].weight_goal %}
+                            <p class="text-dark mb-2"><strong>Weight Goal:</strong> {{ current_user.goals[0].weight_goal }}</p>
+                            {% endif %}
+                            {% if current_user.goals[0].dietary_restrictions %}
+                            <p class="text-dark mb-2"><strong>Dietary Restrictions:</strong> {{ current_user.goals[0].dietary_restrictions }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mt-4">No health and fitness goals set yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,6 +6,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 import pandas as pd
 from flask import request, jsonify
 from app.models import DietPlan
+from werkzeug.utils import secure_filename
+import os
 
 @app.route("/")
 @app.route("/home")
@@ -15,6 +17,10 @@ def home():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route("/user_profile")
+def user_profile():
+    return render_template('user_profile.html')
 
 @app.route("/register", methods=['GET', 'POST'])
 def register():
@@ -188,6 +194,34 @@ def save_diet_plan():
     db.session.commit()
 
     return jsonify({'message': 'Diet plan saved successfully'}), 200
+
+@app.route("/update_profile_picture", methods=["POST"])
+@login_required
+def update_profile_picture():
+    if 'profile_picture' not in request.files:
+        flash('No file part', 'danger')
+        return redirect(url_for('user_profile'))
+
+    file = request.files['profile_picture']
+    if file.filename == '':
+        flash('No selected file', 'danger')
+        return redirect(url_for('user_profile'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.root_path, 'static/profile_pics', filename)
+        file.save(filepath)
+
+        # Update user's profile picture in the database
+        current_user.image_file = f'profile_pics/{filename}'
+        db.session.commit()
+
+        flash('Your profile picture has been updated!', 'success')
+        return redirect(url_for('user_profile'))
+
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 
